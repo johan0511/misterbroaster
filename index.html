@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mister Broaster RC - Pollo Broaster y Comida Rápida</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="icon" type="image/png" href="./Imagenes/logo.jpg">
+    <!-- ✅ VERSIÓN CORRECTA -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #dc2626;
+            --primary-dark: #b91c1c;
+            --secondary: #fbbf24;
+            --accent: #f59e0b;
+            --dark: #1f2937;
+            --dark-soft: #374151;
+            --light-bg: #fef3c7;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --white: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-strong: rgba(220, 38, 38, 0.2);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f9fafb;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 18px 5%;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px var(--shadow-strong);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 42px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .logo-text h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            opacity: 0.95;
+            text-transform: uppercase;
+        }
+
+        #cartIcon {
+            cursor: pointer;
+            background: var(--secondary);
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--dark);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        #cartIcon:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
+        }
+
+        #cartIcon span {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 13px;
+            min-width: 26px;
+            text-align: center;
+        }
+
+        .banner {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.95) 0%, rgba(185, 28, 28, 0.95) 100%), 
+                        url('https://images.pexels.com/photos/60616/fried-chicken-chicken-fried-crunchy-60616.jpeg?auto=compress') center/cover;
+            padding: 80px 5%;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: '🍗';
+            position: absolute;
+            font-size: 400px;
+            opacity: 0.05;
+            top: -100px;
+            right: -50px;
+            transform: rotate(-15deg);
+        }
+
+        .banner-content {
+            max-width: 900px;
+            margin: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .banner h2 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 64px;
+            font-weight: 400;
+            margin-bottom: 15px;
+            letter-spacing: 4px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            line-height: 1.1;
+        }
+
+        .banner .highlight {
+            color: var(--secondary);
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        .banner p {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .banner-features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .banner-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .banner-feature span {
+            font-size: 24px;
+        }
+
+        .swal2-input::placeholder,
+        .swal2-select option:first-child {
+            color: #6b7280;
+            opacity: 1;
+        }
+
+        .swal2-title-custom {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 28px;
+            color: #000000;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .swal2-confirm-btn {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            border: none;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.6);
+            border-radius: 50px;
+            padding: 12px 28px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fff !important;
+            transition: all 0.3s ease;
+        }
+
+        .swal2-confirm-btn:hover {
+            background: linear-gradient(135deg, #b91c1c, #dc2626);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .swal2-cancel-btn {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border: none;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.7);
+            border-radius: 50px;
+            padding: 12px 28px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #1f2937 !important;
+            transition: all 0.3s ease;
+        }
+
+        .swal2-cancel-btn:hover {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .swal2-select,
+        .custom-select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #dc2626;
+            background-color: #fef3c7;
+            color: #1f2937;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%231f2937" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 18px;
+            cursor: pointer;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .swal2-select:focus,
+        .custom-select:focus {
+            border-color: #b91c1c;
+            box-shadow: 0 0 10px rgba(185, 28, 28, 0.6);
+            outline: none;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 30px 5%;
+            box-shadow: 0 2px 10px var(--shadow);
+            position: sticky;
+            top: 70px;
+            z-index: 90;
+        }
+
+        .filters-container {
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        .filters-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: #f3f4f6;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--shadow-strong);
+        }
+
+        .products-section {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 0 5%;
+        }
+
+        .category-section {
+            margin-bottom: 80px;
+        }
+
+        .category-header {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .category-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 42px;
+            color: var(--dark);
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .category-icon {
+            font-size: 48px;
+        }
+
+        .category-subtitle {
+            color: var(--text-light);
+            font-size: 16px;
+            margin-top: 5px;
+            font-weight: 300;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px var(--shadow-strong);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.1);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--secondary);
+            color: var(--dark);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .product-badge.hot {
+            background: var(--primary);
+            color: white;
+        }
+
+        .product-content {
+            padding: 25px;
+        }
+
+        .product-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .product-description {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .product-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .add-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .add-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px var(--shadow-strong);
+        }
+
+        #cartOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #cartOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #cartMenu {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px var(--shadow-strong);
+            transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #cartMenu.active {
+            right: 0;
+        }
+
+        .cart-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-header h3 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+
+        .cart-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .cart-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .cart-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-light);
+        }
+
+        .cart-empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: #fef3c7;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .cart-item:hover {
+            background: #fde68a;
+            border-color: var(--secondary);
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 15px;
+        }
+
+        .cart-item-details {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .cart-item-remove {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .cart-item-remove:hover {
+            background: var(--primary-dark);
+            transform: scale(1.15);
+        }
+
+        .cart-footer {
+            padding: 25px;
+            border-top: 3px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .cart-total-value {
+            color: var(--primary);
+            font-size: 32px;
+            font-family: 'Bebas Neue', cursive;
+            letter-spacing: 1px;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow-strong);
+        }
+
+        .btn-checkout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow-strong);
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 50px 5%;
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-section h4 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            letter-spacing: 1px;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+
+        .link {
+            color: aquamarine;
+        }
+
+        @keyframes addToCart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .cart-added {
+            animation: addToCart 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 968px) {
+            .banner h2 {
+                font-size: 48px;
+            }
+
+            .filters {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 10px;
+            }
+
+            .filters::-webkit-scrollbar {
+                height: 6px;
+            }
+
+            .filters::-webkit-scrollbar-thumb {
+                background: var(--primary);
+                border-radius: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 4%;
+            }
+
+            .logo-text h1 {
+                font-size: 24px;
+            }
+
+            .banner h2 {
+                font-size: 36px;
+            }
+
+            .banner-features {
+                gap: 20px;
+            }
+
+            #cartMenu {
+                width: 100%;
+                right: -100%;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-title {
+                font-size: 32px;
+            }
+
+            .filters-section {
+                top: 65px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <div class="logo-icon">🐔</div>
+        <div class="logo-text">
+            <h1>MISTER BROASTER RC</h1>
+            <span>Pollo Broaster Premium</span>
+        </div>
+    </div>
+    <div id="cartIcon" onclick="toggleCart()">
+        🛒 Pedido <span id="cartCount">0</span>
+    </div>
+</header>
+
+<div class="banner">
+    <div class="banner-content">
+        <h2>EL MEJOR <span class="highlight">POLLO BROASTER</span> DE LA CIUDAD</h2>
+        <p>Crujiente por fuera, jugoso por dentro. La receta secreta que todos aman.</p>
+        <div class="banner-features">
+            <div class="banner-feature">
+                <span>✓</span> Pollo 100% Natural
+            </div>
+            <div class="banner-feature">
+                <span>✓</span> Receta Original
+            </div>
+            <div class="banner-feature">
+                <span>✓</span> Domicilio Gratis
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="filters-section">
+    <div class="filters-container">
+        <div class="filters-title">📋 Filtrar por categoría:</div>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterCategory('all')">🍽️ Todos</button>
+            <button class="filter-btn" onclick="filterCategory('almuerzos')">🍱 Almuerzos Ejecutivos</button>
+            <button class="filter-btn" onclick="filterCategory('pollo-unidad')">🍗 Pollo por Unidad</button>
+            <button class="filter-btn" onclick="filterCategory('pollo-frito')">🍤 Pollo Frito</button>
+            <button class="filter-btn" onclick="filterCategory('pollo-broaster')">⭐ Pollo Broaster</button>
+            <button class="filter-btn" onclick="filterCategory('combos-familiar')">👨‍👩‍👧‍👦 Combos Familiar</button>
+            <button class="filter-btn" onclick="filterCategory('combos-personal')">🍽️ Combos Personal</button>
+            <button class="filter-btn" onclick="filterCategory('sopas')">🍲 Sopas</button>
+            <button class="filter-btn" onclick="filterCategory('adicionales')">🍟 Adicionales</button>
+            <button class="filter-btn" onclick="filterCategory('platos-carta')">🍴 Platos a la Carta</button>
+            <button class="filter-btn" onclick="filterCategory('bebidas')">🥤 Bebidas</button>
+            <button class="filter-btn" onclick="filterCategory('jugos')">🧃 Jugos</button>
+        </div>
+    </div>
+</div>
+
+<div class="products-section" id="productsContainer">
+
+    <!-- POLLO BROASTER POR UNIDAD -->
+    <div class="category-section" data-category="pollo-unidad">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🍗</span>
+                Pollo Broaster por Unidad
+            </h2>
+            <p class="category-subtitle">Elige la cantidad perfecta para ti</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-badge hot">Popular</div>
+                <img src="./comida/Ala.png" class="product-image" alt="Presa de Pollo" />
+                <div class="product-content">
+                    <h3 class="product-name">Ala</h3>
+                    <p class="product-description">Presa individual crujiente y dorada, marinada con nuestra receta secreta.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.000</div>
+                        <button class="add-btn" onclick="addToCart('1 Ala Broaster', 3000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-badge hot">Popular</div>
+                <img src="./comida/Colombina.png" class="product-image" alt="Presa de Pollo" />
+                <div class="product-content">
+                    <h3 class="product-name">Colombina</h3>
+                    <p class="product-description">Presa individual crujiente y dorada, marinada con nuestra receta secreta.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$4.000</div>
+                        <button class="add-btn" onclick="addToCart('1 Colombina Broaster', 4000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-badge hot">Popular</div>
+                <img src="./comida/cuadro.png" class="product-image" alt="Presa de Pollo" />
+                <div class="product-content">
+                    <h3 class="product-name">Cuadro</h3>
+                    <p class="product-description">Presa individual crujiente y dorada, marinada con nuestra receta secreta.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$5.000</div>
+                        <button class="add-btn" onclick="addToCart('1 Cuadro Broaster', 5000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-badge hot">Popular</div>
+                <img src="./comida/pechuga-broaster-2.jpg" class="product-image" alt="Presa de Pollo" />
+                <div class="product-content">
+                    <h3 class="product-name">Pechuga</h3>
+                    <p class="product-description">Presa individual crujiente y dorada, marinada con nuestra receta secreta.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$8.000</div>
+                        <button class="add-btn" onclick="addToCart('1 Pechuga Broaster', 8000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POLLO FRITO -->
+    <div class="category-section" data-category="pollo-frito">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🍤</span>
+                Pollo Frito 
+            </h2>
+            <p class="category-subtitle">El sabor clásico que nunca falla</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="./comida/cuartofritosolo.jpg" class="product-image" alt="Medio Pollo Frito" />
+                <div class="product-content">
+                    <h3 class="product-name">1/4 Pollo Frito</h3>
+                    <p class="product-description">Cuarto de pollo frito, porción perfecta para 1 persona.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$9.000</div>
+                        <button class="add-btn" onclick="addToCart('1/4 Pollo Frito', 9000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/mediofritosolo.png.webp" class="product-image" alt="Medio Pollo Frito" />
+                <div class="product-content">
+                    <h3 class="product-name">1/2 Pollo Frito</h3>
+                    <p class="product-description">Medio pollo frito, porción perfecta para 2 personas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$17.000</div>
+                        <button class="add-btn" onclick="addToCart('1/2 Pollo Frito', 17000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/pollofritoentero.png" class="product-image" alt="Pollo Frito Entero" />
+                <div class="product-content">
+                    <h3 class="product-name">Pollo Frito Entero</h3>
+                    <p class="product-description">Pollo completo frito en aceite puro, dorado y crujiente.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$32.000</div>
+                        <button class="add-btn" onclick="addToCart('Pollo Frito Entero', 32000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POLLO BROASTER -->
+    <div class="category-section" data-category="pollo-broaster">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">⭐</span>
+                Pollo Broaster Completo
+            </h2>
+            <p class="category-subtitle">Nuestra especialidad de la casa</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="./comida/cuartopollobroaster.jpg" class="product-image" alt="Medio Broaster" />
+                <div class="product-content">
+                    <h3 class="product-name">1/4 Pollo Broaster</h3>
+                    <p class="product-description">Cuarto de pollo broaster con el mejor sabor. Para 1 persona.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$9.000</div>
+                        <button class="add-btn" onclick="addToCart('1/4 Pollo Broaster', 9000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/mediobroastersolo.jpg" class="product-image" alt="Medio Broaster" />
+                <div class="product-content">
+                    <h3 class="product-name">1/2 Pollo Broaster</h3>
+                    <p class="product-description">Medio pollo broaster con el mejor sabor. Para 2 personas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$18.000</div>
+                        <button class="add-btn" onclick="addToCart('1/2 Pollo Broaster', 18000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-badge hot">Best Seller</div>
+                <img src="./comida/broasterpollocompleto.png" class="product-image" alt="Pollo Broaster Entero" />
+                <div class="product-content">
+                    <h3 class="product-name">Pollo Broaster Entero</h3>
+                    <p class="product-description">Pollo completo estilo broaster, crujiente y jugoso. Para 4-5 personas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$34.000</div>
+                        <button class="add-btn" onclick="addToCart('Pollo Broaster Entero', 34000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMBOS FAMILIAR -->
+    <div class="category-section" data-category="combos-familiar">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">👨‍👩‍👧‍👦</span>
+                Combos Familiares
+            </h2>
+            <p class="category-subtitle">Comida para toda la familia al mejor precio</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-badge hot">Súper Combo</div>
+                <img src="./comida/combomediofrito.png" class="product-image" alt="Combo Familiar Grande" />
+                <div class="product-content">
+                    <h3 class="product-name">1/2 Pollo Frito</h3>
+                    <p class="product-description">4 presas pollo frito + papas salada + Platano relleno + gaseosa 1.5L + 2 arepas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$26.000</div>
+                        <button class="add-btn" onclick="addComboToCart('Medio pollo frito', 26000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-badge hot">Súper Combo</div>
+                <img src="./comida/mediobroaster.jpg" class="product-image" alt="Combo Familiar Grande" />
+                <div class="product-content">
+                    <h3 class="product-name">1/2 Pollo Broaster</h3>
+                    <p class="product-description">4 Presas Broaster + papas salada + Platano relleno + gaseosa 1.5L + 2 arepas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$27.000</div>
+                        <button class="add-btn" onclick="addComboToCart('Medio Pollo Broaster', 27000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/familiarfrito.png" class="product-image" alt="Combo Familiar Mediano" />
+                <div class="product-content">
+                    <div class="product-badge hot">Súper Combo</div>
+                    <h3 class="product-name">Combo Familiar Frito</h3>
+                    <p class="product-description">8 presas frito + papas salada + gaseosa 1.5L + 4 arepas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$41.000</div>
+                        <button class="add-btn" onclick="addComboToCart('Combo Familiar Frito', 41000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/combofamiliarbroaster.png" class="product-image" alt="Combo Familiar Mediano" />
+                <div class="product-content">
+                    <div class="product-badge hot">🌟Destacable🌟</div>
+                    <h3 class="product-name">Combo Familiar Broaster</h3>
+                    <p class="product-description">8 presas broaster + papas francesa + gaseosa 1.5L + 4 arepas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$43.000</div>
+                        <button class="add-btn" onclick="addComboToCart('Combo Familiar broaster', 43000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMBOS PERSONAL -->
+    <div class="category-section" data-category="combos-personal">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🍽️</span>
+                Combo Personal
+            </h2>
+            <p class="category-subtitle">La porción perfecta solo para ti</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-badge">Recomendado</div>
+                <img src="./comida/combopersonal.png" class="product-image" alt="Combo Personal 1" />
+                <div class="product-content">
+                    <h3 class="product-name">Combo Personal </h3>
+                    <p class="product-description">2 presas broaster + papa francesa + patacon + gaseosa personal 250 + arepa.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$12.000</div>
+                        <button class="add-btn" onclick="addComboToCart('Combo Personal', 12000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOPAS -->
+    <div class="category-section" data-category="sopas">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🍲</span>
+                Sopas Caseras
+            </h2>
+            <p class="category-subtitle">Preparadas con ingredientes frescos del día</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="./comida/menudencia.jpg" class="product-image" alt="Sopa de Menudencia" />
+                <div class="product-content">
+                    <h3 class="product-name">Menudencia</h3>
+                    <p class="product-description">
+                        Sopa de menudencias con verduras, fideos y un toque de cilantro, servida con arroz.
+                    </p>
+                    <div class="product-footer">
+                        <div class="product-price">$8.000</div>
+                        <button class="add-btn" onclick="addToCart('Sopa de Menudencia', 8000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/ajiaco.png" class="product-image" alt="Ajiaco" />
+                <div class="product-content">
+                    <h3 class="product-name">Ajiaco Santafereño</h3>
+                    <p class="product-description">Con pollo, papas criollas, guascas, mazorca.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$9.000</div>
+                        <button class="add-btn" onclick="addToCart('Ajiaco Santafereño', 9000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/mondongo.png" class="product-image" alt="Mondongo" />
+                <div class="product-content">
+                    <h3 class="product-name">Mondongo</h3>
+                    <p class="product-description">Sopa de mondongo con vegetales frescos y especias.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$11.000</div>
+                        <button class="add-btn" onclick="addToCart('Mondongo', 11000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADICIONALES -->
+    <div class="category-section" data-category="adicionales">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🍟</span>
+                Adicionales
+            </h2>
+            <p class="category-subtitle">Complementa tu pedido con estos acompañamientos</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="./comida/papasfritas.jpg" class="product-image" alt="Papas Francesas" />
+                <div class="product-content">
+                    <h3 class="product-name">Papas Francesas</h3>
+                    <p class="product-description">Papas crujientes doradas al punto perfecto.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$5.000</div>
+                        <button class="add-btn" onclick="addToCart('Papas Francesas', 5000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/arroz.png" class="product-image" alt="Papas Pequeñas" />
+                <div class="product-content">
+                    <h3 class="product-name">Arroz Blanco</h3>
+                    <p class="product-description">Porción individual de arroz.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.000</div>
+                        <button class="add-btn" onclick="addToCart('Porcion de arroz', 3000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/ensalada.png" class="product-image" alt="Ensalada" />
+                <div class="product-content">
+                    <h3 class="product-name">Ensalada Fresca</h3>
+                    <p class="product-description">Lechuga, tomate, zanahoria y cebolla con aderezo.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$2.000</div>
+                        <button class="add-btn" onclick="addToCart('Ensalada Fresca', 2000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/yuca.png" class="product-image" alt="Arepas" />
+                <div class="product-content">
+                    <h3 class="product-name">Yuca (4 unidades)</h3>
+                    <p class="product-description">Yuca frita crujiente.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$4.000</div>
+                        <button class="add-btn" onclick="addToCart('Yuca x4', 4000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/platano-frito.png" class="product-image" alt="Patacones" />
+                <div class="product-content">
+                    <h3 class="product-name">Patacones</h3>
+                    <p class="product-description">Plátano verde frito y aplastado, crujiente.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.000</div>
+                        <button class="add-btn" onclick="addToCart('Patacones', 3000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/platano solo.jpg" class="product-image" alt="Arroz" />
+                <div class="product-content">
+                    <h3 class="product-name">Platano</h3>
+                    <p class="product-description">Platano entero.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.000</div>
+                        <button class="add-btn" onclick="addToCart('Platano entero', 3000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/platano-relleno.jpg" class="product-image" alt="Arroz" />
+                <div class="product-content">
+                    <h3 class="product-name">Platano relleno</h3>
+                    <p class="product-description">Platano relleno, queso y bocadillo</p>
+                    <div class="product-footer">
+                        <div class="product-price">$4.000</div>
+                        <button class="add-btn" onclick="addToCart('Platano relleno', 4000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLATOS A LA CARTA -->
+    <div class="category-section" data-category="platos-carta">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🍴</span>
+                Platos a la Carta
+            </h2>
+            <p class="category-subtitle">Platos completos preparados al momento</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="./comida/bandejapolloasado.png" class="product-image" alt="Bandeja Paisa" />
+                <div class="product-content">
+                    <h3 class="product-name">Bandeja con Pollo Frito</h3>
+                    <p class="product-description">Arroz, papa francesa, patacón y ensalada.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$16.000</div>
+                        <button class="add-btn" onclick="addToCart('Bandeja con pollo frito', 16000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/BANDEJA-CON-POLLO-BROASTER-GRANPOLLO.jpg" class="product-image" alt="Bandeja Paisa" />
+                <div class="product-content">
+                    <h3 class="product-name">Bandeja con Pollo Broaster</h3>
+                    <p class="product-description">Arroz, papa francesa, patacón y ensalada.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$16.000</div>
+                        <button class="add-btn" onclick="addToCart('Bandeja con pollo Broaster', 16000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/arroz-pollo.png" class="product-image" alt="Bandeja Paisa" />
+                <div class="product-content">
+                    <h3 class="product-name">Arroz con Pollo</h3>
+                    <p class="product-description">Papá francesa patacon  y ensalada.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$18.000</div>
+                        <button class="add-btn" onclick="addToCart('Arroz con Pollo', 18000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/pechuga.jpg" class="product-image" alt="Pechuga a la Plancha" />
+                <div class="product-content">
+                    <h3 class="product-name">Pechuga a la Plancha</h3>
+                    <p class="product-description">Pechuga de pollo a la plancha con arroz, papa francesa, patacón y ensalada .</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Pechuga a la Plancha', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/pechuga-gratinada-nawi-cumaral.png" class="product-image" alt="Pechuga a la Plancha" />
+                <div class="product-content">
+                    <h3 class="product-name">Pechuga Gratinada</h3>
+                    <p class="product-description">Pechuga de pollo Gratinada con arroz, papa francesa, patacón y ensalada .</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Pechuga Gratinada', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/churrasco-1.png" class="product-image" alt="Carne Asada" />
+                <div class="product-content">
+                    <h3 class="product-name">Churrasco</h3>
+                    <p class="product-description">Churrasco con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Churrasco', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/mojarra.jpg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Mojarra Frita</h3>
+                    <p class="product-description">Mojarra entera frita con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Mojarra Frita', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/lomo-de-cerdo-a-la-parilla-1-scaled.jpeg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Lomo de cerdo</h3>
+                    <p class="product-description">Lomo de cerdo con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Lomo de cerdo', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/bagre-salsa.jpg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Bagre en salsa</h3>
+                    <p class="product-description">Bagre en salsa con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Bagre en salsa', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>            
+            <div class="product-card">
+                <img src="./comida/un-plato-de-bagre-frito.jpg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Bagre frito</h3>
+                    <p class="product-description">Bagre frito con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Bagre frito', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/sobrebarriga-asada.jpg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Sobrebarriga Asada</h3>
+                    <p class="product-description">Sobrebarriga Asada con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Sobrebarriga asada', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/sobrebarriga.jpg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Sobrebarriga En Salsa</h3>
+                    <p class="product-description">Sobrebarriga en salsa con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Sobrebarriga en salsa', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/Trucha-a-la-plancha-4._resultado.jpg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Trucha</h3>
+                    <p class="product-description">Trucha con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Trucha', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./comida/costillabbq.jpg" class="product-image" alt="Mojarra Frita" />
+                <div class="product-content">
+                    <h3 class="product-name">Costilla BBQ</h3>
+                    <p class="product-description">Costillas BBQ con arroz, papa francesa, patacón y ensalada</p>
+                    <div class="product-footer">
+                        <div class="product-price">$25.000</div>
+                        <button class="add-btn" onclick="addToCart('Costilla BBQ', 25000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BEBIDAS -->
+    <div class="category-section" data-category="bebidas">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🥤</span>
+                Bebidas
+            </h2>
+            <p class="category-subtitle">Refréscate con nuestras bebidas</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="./bebidas/postobon-250.jpg" class="product-image" alt="Gaseosa 1.5L" />
+                <div class="product-content">
+                    <h3 class="product-name">Gaseosa 250Ml</h3>
+                    <p class="product-description">Elige tu sabor favorito</p>
+                    <div class="product-footer">
+                        <div class="product-price">$2.500</div>
+                        <button class="add-btn" onclick="addBeverageWithFlavor('Gaseosa 250Ml', 2500, 'gaseosa250')">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/postobon400.png" class="product-image" alt="Gaseosa Personal" />
+                <div class="product-content">
+                    <h3 class="product-name">Gaseosa Personal 400Ml</h3>
+                    <p class="product-description">Elige tu sabor favorito</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.000</div>
+                        <button class="add-btn" onclick="addBeverageWithFlavor('Gaseosa Personal 400Ml', 3000, 'gaseosa400')">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/COCA-COLA-500-ML-1.png" class="product-image" alt="Agua" />
+                <div class="product-content">
+                    <h3 class="product-name">Coca Cola 500Ml</h3>
+                    <p class="product-description">Coca Cola personal.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.500</div>
+                        <button class="add-btn" onclick="addToCart('Coca Cola 500Ml', 3500)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/postobon.jpeg" class="product-image" alt="Gaseosa 2L" />
+                <div class="product-content">
+                    <h3 class="product-name">Gaseosa 1.5 Litros</h3>
+                    <p class="product-description">Elige tu sabor favorito</p>
+                    <div class="product-footer">
+                        <div class="product-price">$5.000</div>
+                        <button class="add-btn" onclick="addBeverageWithFlavor('Gaseosa 1.5L', 5000, 'gaseosa1.5')">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/cocacola.png" class="product-image" alt="Gaseosa 2L" />
+                <div class="product-content">
+                    <h3 class="product-name">Gaseosa 1.5L Coca-Cola</h3>
+                    <p class="product-description">Coca-Cola</p>
+                    <div class="product-footer">
+                        <div class="product-price">$7.000</div>
+                        <button class="add-btn" onclick="addToCart('Gaseosa 1.5L Coca-Cola', 7000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/jugohit500.jpeg" class="product-image" alt="Gaseosa 2L" />
+                <div class="product-content">
+                    <h3 class="product-name">Jugo Hit Personal 500Ml</h3>
+                    <p class="product-description">Elige tu sabor favorito</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.500</div>
+                        <button class="add-btn" onclick="addBeverageWithFlavor('Jugo Hit Personal 500Ml', 3500, 'jugohit')">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/colaypola.png" class="product-image" alt="Agua" />
+                <div class="product-content">
+                    <h3 class="product-name">Cola y Pola</h3>
+                    <p class="product-description">Cola y Pola en Lata</p>
+                    <div class="product-footer">
+                        <div class="product-price">$3.500</div>
+                        <button class="add-btn" onclick="addToCart('Cola y Pola en Lata', 3500)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/refajo.png" class="product-image" alt="Agua" />
+                <div class="product-content">
+                    <h3 class="product-name">Cola y Pola 1.5 Litros</h3>
+                    <p class="product-description">Cola y Pola 1.5 Litros</p>
+                    <div class="product-footer">
+                        <div class="product-price">$7.000</div>
+                        <button class="add-btn" onclick="addToCart('Cola y Pola 1.5 Litros', 7000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/aguanormal.png" class="product-image" alt="Agua" />
+                <div class="product-content">
+                    <h3 class="product-name">Agua Botella 600ml</h3>
+                    <p class="product-description">Agua mineral natural.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$2.000</div>
+                        <button class="add-btn" onclick="addToCart('Agua 600ml', 2000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/aguagas.png" class="product-image" alt="Agua" />
+                <div class="product-content">
+                    <h3 class="product-name">Agua Botella Con Gas 600ml</h3>
+                    <p class="product-description">Agua mineral Con gas.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$2.000</div>
+                        <button class="add-btn" onclick="addToCart('Agua con gas 600ml', 2000)">Agregar</button>
+                    </div>
+                </div>
+            </div>            
+            <div class="product-card">
+                <img src="./bebidas/poker.jpg" class="product-image" alt="Agua" />
+                <div class="product-content">
+                    <h3 class="product-name">Cerveza en Lata</h3>
+                    <p class="product-description">Águila, Poker</p>
+                    <div class="product-footer">
+                        <div class="product-price">$4.000</div>
+                        <br>
+                        <button class="add-btn" onclick="addBeerWithBrand('Cerveza ', 4000)">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JUGOS -->
+    <div class="category-section" data-category="jugos">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🧃</span>
+                Jugos Naturales
+            </h2>
+            <p class="category-subtitle">Preparados con fruta fresca</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="./bebidas/JUGOS.jpg" class="product-image" alt="Jugo Natural" />
+                <div class="product-content">
+                    <h3 class="product-name">Jugo Natural en Agua</h3>
+                    <p class="product-description">Elige tu sabor favorito</p>
+                    <div class="product-footer">
+                        <div class="product-price">$6.000</div>
+                        <button class="add-btn" onclick="addJuiceWithFlavor('Jugo Natural en Agua', 6000, 'agua')">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="./bebidas/jugos-leche.jpg" class="product-image" alt="Jugo en Leche" />
+                <div class="product-content">
+                    <h3 class="product-name">Jugo Natural en Leche</h3>
+                    <p class="product-description">Elige tu sabor favorito</p>
+                    <div class="product-footer">
+                        <div class="product-price">$7.000</div>
+                        <button class="add-btn" onclick="addJuiceWithFlavor('Jugo Natural en Leche', 7000, 'leche')">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALMUERZOS EJECUTIVOS -->
+    <div class="category-section" data-category="almuerzos">
+        <div class="category-header">
+            <h2 class="category-title">
+                <span class="category-icon">🍱</span>
+                Almuerzos Ejecutivos
+            </h2>
+            <p class="category-subtitle">Cumple tus antojos de comer rico todos los dias</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-badge">Hoy</div>
+                <img src="./comida/almuerzoejecutivo.png" class="product-image" alt="Almuerzo Ejecutivo 1" />
+                <div class="product-content">
+                    <h3 class="product-name">Almuerzo Ejecutivo #1</h3>
+                    <p class="product-description">Sopa pequeña de menudencias o ajiaco + bandeja con arroz, papa francesa, patacón, ensalada + proteína a elegir + jugo.</p>
+                    <div class="product-footer">
+                        <div class="product-price">$17.000</div>
+                        <button class="add-btn" onclick="addLunchWithOptions()">Agregar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- OVERLAY DEL CARRITO -->
+<div id="cartOverlay" onclick="toggleCart()"></div>
+
+<!-- CARRITO -->
+<div id="cartMenu">
+    <div class="cart-header">
+        <h3>TU PEDIDO</h3>
+        <button class="cart-close" onclick="toggleCart()">×</button>
+    </div>
+    <div class="cart-body" id="cartItems">
+        <div class="cart-empty">
+            <div class="cart-empty-icon">🛒</div>
+            <p>Tu carrito está vacío</p>
+        </div>
+    </div>
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>Total:</span>
+            <span class="cart-total-value" id="cartTotal">$0</span>
+        </div>
+        <button class="btn-checkout" onclick="finishOrder()">Realizar Pedido</button>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>Mister Broaster RC</h4>
+            <p>El mejor pollo broaster de la ciudad desde 2020. Calidad y sabor garantizados.</p>
+        </div>
+        <div class="footer-section">
+            <h4>Contacto</h4>
+            <p>📞 3152909927</p>
+            <p>📱 WhatsApp: 321 2672196</p>
+            <p>📧 pedidos@misterbroasterrc.com</p>
+        </div>
+        <div class="footer-section">
+            <h4>Horarios</h4>
+            <p>Lunes a Domingo</p>
+            <p>12:00 PM - 10:00 PM</p>
+            <p>Domicilios hasta las 9:30 PM</p>
+        </div>
+        <div class="footer-section">
+            <h4>Síguenos</h4>
+            <a href="#">Facebook</a>
+            <a href="#">Instagram</a>
+            <a href="https://wa.link/5juwo5">Trabaja con nosotros</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        © 2025 Mister Broaster RC. Todos los derechos reservados. <br>
+        Hecho por <a class="link" href="http://bit.ly/3WVDhYX" target="_blank">JSCH SOLUTION</a>
+    </div>
+</footer>
+
+<script>
+    // ============================================
+// INICIALIZAR EMAILJS CON TU PUBLIC KEY
+// ============================================
+// ✅ VERSIÓN CORRECTA
+(function() {
+    emailjs.init({
+        publicKey: "vDzWDMaio7cDnj3Hw"
+    });
+})();
+
+let cart = [];
+let currentFilter = 'all';
+
+// ============================================
+// FUNCIONES DEL CARRITO
+// ============================================
+
+function toggleCart() {
+    const menu = document.getElementById("cartMenu");
+    const overlay = document.getElementById("cartOverlay");
+    
+    menu.classList.toggle("active");
+    overlay.classList.toggle("active");
+}
+
+function addToCart(name, price, details = null) {
+    cart.push({ name, price, details });
+    updateCart();
+    
+    const cartIcon = document.getElementById("cartIcon");
+    cartIcon.classList.add("cart-added");
+    setTimeout(() => cartIcon.classList.remove("cart-added"), 400);
+    
+    const menu = document.getElementById("cartMenu");
+    const overlay = document.getElementById("cartOverlay");
+    menu.classList.add("active");
+    overlay.classList.add("active");
+}
+
+function updateCart() {
+    const container = document.getElementById("cartItems");
+    
+    if (cart.length === 0) {
+        container.innerHTML = `
+            <div class="cart-empty">
+                <div class="cart-empty-icon">🛒</div>
+                <p>Tu carrito está vacío</p>
+            </div>
+        `;
+    } else {
+        let html = "";
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            total += item.price;
+            html += `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        ${item.details ? `<div class="cart-item-details">${item.details}</div>` : ''}
+                        <div class="cart-item-price">${item.price.toLocaleString()}</div>
+                    </div>
+                    <button class="cart-item-remove" onclick="removeItem(${index})">×</button>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        document.getElementById("cartTotal").textContent = `${total.toLocaleString()}`;
+    }
+
+    document.getElementById("cartCount").textContent = cart.length;
+}
+
+function removeItem(index) {
+    cart.splice(index, 1);
+    updateCart();
+}
+
+// ============================================
+// FUNCIONES PARA AGREGAR CON OPCIONES
+// ============================================
+
+// Función para gaseosas con selección de sabor
+async function addBeverageWithFlavor(name, price, type) {
+    let flavors = [];
+    
+    if (type === 'gaseosa250' || type === 'gaseosa400' || type === 'gaseosa500' || type === 'gaseosa1.5') {
+        flavors = ['Manzana', 'Pepsi', 'Colombiana', 'Uva', 'Naranja', '7up', 'Quatro'];
+    } else if (type === 'jugohit') {
+        flavors = ['Mora', 'Lulo', 'Naranja', 'Piña tropical', 'Mango'];
+    }
+
+    const { value: flavor } = await Swal.fire({
+        title: 'Selecciona el sabor',
+        html: `<select id="flavor-select" class="swal2-select">
+                 <option value="" disabled selected>- Elige un sabor -</option>
+                 ${flavors.map(f => `<option value="${f}">${f}</option>`).join('')}
+               </select>`,
+        confirmButtonText: 'Agregar al carrito',
+        confirmButtonColor: '#dc2626',
+        background: '#fef3c7',
+        color: '#000000',
+        customClass: { 
+            title: 'swal2-title-custom', 
+            confirmButton: 'swal2-confirm-btn' 
+        },
+        preConfirm: () => {
+            const select = document.getElementById('flavor-select');
+            if (!select.value) {
+                Swal.showValidationMessage('Por favor selecciona un sabor');
+                return false;
+            }
+            return select.value;
+        }
+    });
+
+    if (flavor) {
+        addToCart(name, price, `Sabor: ${flavor}`);
+    }
+}
+
+// Función para jugos con selección de sabor
+async function addJuiceWithFlavor(name, price, base) {
+    const flavors = ['Mora', 'Lulo', 'Guanábana', 'Fresa', 'Maracuyá'];
+
+    const { value: flavor } = await Swal.fire({
+        title: `Selecciona el sabor del jugo ${base}`,
+        html: `<select id="flavor-select" class="swal2-select">
+                 <option value="" disabled selected>- Elige un sabor -</option>
+                 ${flavors.map(f => `<option value="${f}">${f}</option>`).join('')}
+               </select>`,
+        confirmButtonText: 'Agregar al carrito',
+        confirmButtonColor: '#dc2626',
+        background: '#fef3c7',
+        color: '#000000',
+        customClass: { 
+            title: 'swal2-title-custom', 
+            confirmButton: 'swal2-confirm-btn' 
+        },
+        preConfirm: () => {
+            const select = document.getElementById('flavor-select');
+            if (!select.value) {
+                Swal.showValidationMessage('Por favor selecciona un sabor');
+                return false;
+            }
+            return select.value;
+        }
+    });
+
+    if (flavor) {
+        addToCart(name, price, `${base} - Sabor: ${flavor}`);
+    }
+}
+
+// Función para cerveza con selección de marca
+async function addBeerWithBrand(name, price) {
+    const brands = ['Poker', 'Águila'];
+
+    const { value: brand } = await Swal.fire({
+        title: 'Selecciona la marca de cerveza',
+        html: `<select id="brand-select" class="swal2-select">
+                 <option value="" disabled selected>- Elige una marca -</option>
+                 ${brands.map(b => `<option value="${b}">${b}</option>`).join('')}
+               </select>`,
+        confirmButtonText: 'Agregar al carrito',
+        confirmButtonColor: '#dc2626',
+        background: '#fef3c7',
+        color: '#000000',
+        customClass: { 
+            title: 'swal2-title-custom', 
+            confirmButton: 'swal2-confirm-btn' 
+        },
+        preConfirm: () => {
+            const select = document.getElementById('brand-select');
+            if (!select.value) {
+                Swal.showValidationMessage('Por favor selecciona una marca');
+                return false;
+            }
+            return select.value;
+        }
+    });
+
+    if (brand) {
+        addToCart(name, price, `Marca: ${brand}`);
+    }
+}
+
+// Función para almuerzo ejecutivo con opciones personalizadas
+async function addLunchWithOptions() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Personaliza tu Almuerzo Ejecutivo',
+        html: `
+            <select id="soup-select" class="swal2-select">
+                <option value="" disabled selected>- Selecciona la sopa -</option>
+                <option value="Menudencia">Menudencia</option>
+                <option value="Ajiaco">Ajiaco</option>
+            </select>
+            <select id="protein-select" class="swal2-select">
+                <option value="" disabled selected>- Selecciona la proteína -</option>
+                <option value="Carne asada">Carne asada</option>
+                <option value="Pechuga a la plancha">Pechuga a la plancha</option>
+                <option value="Lomo de cerdo">Lomo de cerdo</option>
+                <option value="Mojarra">Mojarra</option>
+            </select>
+            <select id="juice-select" class="swal2-select">
+                <option value="" disabled selected>- Selecciona el sabor del jugo de caja -</option>
+                <option value="Mora">Mora</option>
+                <option value="Mango">Mango</option>
+                <option value="Fresa">Fresa</option>
+                <option value="Lulo">Lulo</option>
+            </select>
+        `,
+        confirmButtonText: 'Agregar al carrito',
+        confirmButtonColor: '#dc2626',
+        background: '#fef3c7',
+        color: '#000000',
+        customClass: { 
+            title: 'swal2-title-custom', 
+            confirmButton: 'swal2-confirm-btn' 
+        },
+        preConfirm: () => {
+            const soup = document.getElementById('soup-select').value;
+            const protein = document.getElementById('protein-select').value;
+            const juice = document.getElementById('juice-select').value;
+
+            if (!soup || !protein || !juice) {
+                Swal.showValidationMessage('Por favor completa todas las selecciones');
+                return false;
+            }
+
+            return { soup, protein, juice };
+        }
+    });
+
+    if (formValues) {
+        const details = `Sopa: ${formValues.soup} | Proteína: ${formValues.protein} | Jugo de caja: ${formValues.juice}`;
+        addToCart('Almuerzo Ejecutivo #1', 17000, details);
+    }
+}
+
+// Función para combos con sabor de gaseosa
+async function addComboToCart(name, price, size) {
+    const flavors = ['Manzana', 'Pepsi', 'Colombiana', 'Uva', 'Naranja', '7up', 'Quatro', 'Sprite'];
+    const title = 'Selecciona el sabor de la gaseosa';
+
+    const subtitle = size === 'familiar' ? 'Gaseosa 1.5L' : 'Gaseosa';
+
+    const { value: selectedFlavor } = await Swal.fire({
+        title: title,
+        html: `<div style='margin-bottom:10px'>${subtitle}</div>` +
+              `<select id='flavor-select' class='swal2-select'>` +
+              `<option value='' disabled selected>Elige un sabor</option>` +
+              flavors.map(f => `<option value='${f}'>${f}</option>`).join("") +
+              `</select>`,
+        confirmButtonText: "Agregar al carrito",
+        confirmButtonColor: "#dc2626",
+        background: "#fef3c7",
+        color: "#000000",
+        customClass: {
+            title: 'swal2-title-custom',
+            confirmButton: 'swal2-confirm-btn'
+        },
+        preConfirm: () => {
+            const select = document.getElementById('flavor-select');
+            if (!select.value) {
+                Swal.showValidationMessage("Por favor selecciona un sabor");
+                return false;
+            }
+            return select.value;
+        }
+    });
+
+    if (selectedFlavor) {
+        const sizeText = size === 'familiar' ? '1.5L' : '';
+        const details = `Gaseosa ${sizeText}: ${selectedFlavor}`;
+        addToCart(name, price, details);
+    }
+}
+
+// ============================================
+// FUNCIÓN PRINCIPAL: FINALIZAR PEDIDO
+// ============================================
+
+async function finishOrder() {
+    console.log('🚀 Iniciando proceso de pedido...');
+    
+    if (cart.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Tu carrito está vacío!',
+            confirmButtonColor: '#dc2626',
+            background: '#fef3c7',
+            color: '#000000',
+        });
+        return;
+    }
+
+    let total = cart.reduce((sum, item) => sum + item.price, 0);
+    console.log('💰 Total calculado:', total);
+
+    // Validar pedido mínimo de $10,000
+    if (total < 10000) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Pedido mínimo no alcanzado',
+            html: `<p style="color:#000;">El pedido mínimo es de <b>$10.000</b>.<br>Tu pedido actual es de <b>$${total.toLocaleString()}</b>.<br><br>Por favor agrega más productos al carrito.</p>`,
+            confirmButtonColor: '#dc2626',
+            background: '#fef3c7',
+            color: '#000000',
+        });
+        return;
+    }
+
+    let cashGiven = 0;
+
+    // Confirmación del total
+    const { isConfirmed } = await Swal.fire({
+        title: 'Confirma tu pedido',
+        html: `<p style="color:#000;">El total a pagar es <b>$${total.toLocaleString()}</b></p>`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Proceder con el pago',
+        cancelButtonText: 'Modificar pedido',
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#fbbf24',
+        background: '#fef3c7',
+        color: '#000000',
+    });
+
+    if (!isConfirmed) return;
+
+    // Solicitar datos del cliente
+    const { value: formValues } = await Swal.fire({
+        title: 'Confirmar datos del domicilio',
+        html: `<input id='swal-input-name' class="swal2-input" placeholder="Nombre completo" style="margin-bottom:10px;">
+                 <input id='swal-input-address' class="swal2-input" placeholder="Dirección completa" style="margin-bottom:10px;">
+                 <input id='swal-input-tower' class="swal2-input" placeholder="Torre y Apt (si aplica)" style="margin-bottom:10px;">
+                 <input id='swal-input-phone' class="swal2-input" placeholder="Número de contacto" style="margin-bottom:10px;">
+                 <input id='swal-input-complex' class="swal2-input" placeholder="Nombre del conjunto (si aplica)" style="margin-bottom:10px;">
+                 <select id='swal-input-method' class="swal2-select" style="margin-bottom:10px;">
+                   <option value='' disabled selected>- Selecciona método de pago -</option>
+                   <option value='Nequi'>Nequi</option>
+                   <option value='Daviplata'>Daviplata</option>
+                   <option value='Efectivo'>Efectivo</option>
+                 </select>
+                 <div id="payment-img" style="margin-bottom:10px;"></div>
+                 <div id="cash-payment" style="display:none; margin-top:10px;">
+                   <input id="swal-input-cash" class="swal2-input" type="number" min="0" placeholder="¿Con cuánto va a pagar?" />
+                   <p id="change-info" style="font-weight:bold; margin-top:5px; color:#000;"></p>
+                 </div>`,
+        background: '#fef3c7',
+        color: '#000000',
+        confirmButtonColor: '#dc2626',
+        focusConfirm: false,
+        preConfirm: () => {
+            const name = document.getElementById('swal-input-name').value;
+            const address = document.getElementById('swal-input-address').value;
+            const phone = document.getElementById('swal-input-phone').value;
+            const method = document.getElementById('swal-input-method').value;
+
+            if (!name || !address || !phone || !method) {
+                Swal.showValidationMessage('Por favor, completa todos los campos obligatorios');
+                return;
+            }
+
+            return {
+                name: name,
+                address: address,
+                tower: document.getElementById('swal-input-tower').value || 'N/A',
+                phone: phone,
+                complex: document.getElementById('swal-input-complex').value || 'N/A',
+                method: method,
+                cashGiven: cashGiven
+            };
+        },
+        didOpen: () => {
+            const select = document.getElementById('swal-input-method');
+            const container = document.getElementById('payment-img');
+            const cashPaymentDiv = document.getElementById('cash-payment');
+            const cashInput = document.getElementById('swal-input-cash');
+            const changeInfo = document.getElementById('change-info');
+
+            function updateQRCode() {
+                if (select.value === 'Nequi') {
+                    cashPaymentDiv.style.display = 'none';
+                    container.innerHTML = `<div style="text-align:center; padding:20px; background:#fff; border-radius:12px; margin-top:15px;"><p style="font-weight:600; color:#b91c1c; margin-bottom:10px;">💳 Pago por Nequi</p><p style="color:#000; font-size:14px;">Envía <b>$${total.toLocaleString()}</b> al número:</p><p style="font-size:20px; font-weight:700; color:#dc2626; margin:10px 0;">321 2672196</p></div>`;
+                } else if (select.value === 'Daviplata') {
+                    cashPaymentDiv.style.display = 'none';
+                    container.innerHTML = `<div style="text-align:center; padding:20px; background:#fff; border-radius:12px; margin-top:15px;"><p style="font-weight:600; color:#b91c1c; margin-bottom:10px;">💳 Pago por Daviplata</p><p style="color:#000; font-size:14px;">Envía <b>$${total.toLocaleString()}</b> al número:</p><p style="font-size:20px; font-weight:700; color:#dc2626; margin:10px 0;">321 2672196</p></div>`;
+                } else if (select.value === 'Efectivo') {
+                    container.innerHTML = `<p style="font-weight:600; color:#b91c1c; text-align:center;">💵 Monto a pagar: <b>$${total.toLocaleString()}</b></p>`;
+                    cashPaymentDiv.style.display = 'block';
+                    cashInput.value = '';
+                    changeInfo.textContent = '';
+                } else {
+                    container.innerHTML = '';
+                    cashPaymentDiv.style.display = 'none';
+                }
+            }
+
+            cashInput.addEventListener('input', () => {
+                const val = parseFloat(cashInput.value);
+                if (isNaN(val) || val < total) {
+                    changeInfo.textContent = 'El monto debe ser mayor o igual al total a pagar.';
+                    changeInfo.style.color = '#dc2626';
+                    cashGiven = 0;
+                    return;
+                }
+                cashGiven = val;
+                const change = val - total;
+                changeInfo.textContent = `Su cambio es de $${change.toLocaleString()}`;
+                changeInfo.style.color = '#059669';
+            });
+
+            updateQRCode();
+            select.addEventListener('change', updateQRCode);
+
+            Object.assign(select.style, {
+                width: '100%', padding: '10px 12px', borderRadius: '12px', border: '2px solid #dc2626',
+                backgroundColor: '#fef3c7', color: '#000000', fontFamily: "'Poppins', sans-serif",
+                fontWeight: '600', fontSize: '16px', letterSpacing: '0.5px', appearance: 'none',
+                cursor: 'pointer',
+                backgroundImage: "url('data:image/svg+xml;utf8,<svg fill=%23000000 height=24 viewBox=0 0 24 24 width=24 xmlns=http://www.w3.org/2000/svg><path d=M7 10l5 5 5-5z/></svg>')",
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '16px'
+            });
+        },
+    });
+
+    if (!formValues) {
+        console.log('❌ Usuario canceló el formulario');
+        return;
+    }
+
+    console.log('✅ Datos del formulario recibidos:', formValues);
+
+    // Validar monto en efectivo
+    if (formValues.method === 'Efectivo' && formValues.cashGiven < total) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Monto insuficiente',
+            text: 'El monto debe ser igual o mayor al total a pagar.',
+            confirmButtonColor: '#dc2626',
+            background: '#fef3c7',
+        });
+        return;
+    }
+
+    // Confirmación final
+    const confirmFinal = await Swal.fire({
+        title: '¿Los datos ingresados son correctos?',
+        icon: 'question',
+        showDenyButton: true,
+        confirmButtonText: 'Sí, confirmar',
+        denyButtonText: 'No, corregir',
+        confirmButtonColor: '#dc2626',
+        denyButtonColor: '#fbbf24',
+        background: '#fef3c7',
+        color: '#000000',
+    });
+
+    if (!confirmFinal.isConfirmed) {
+        console.log('❌ Usuario no confirmó los datos');
+        return;
+    }
+
+    // ============================================
+    // GENERAR DATOS PARA EMAIL
+    // ============================================
+    const invoiceNumber = Math.floor(100000 + Math.random() * 900000);
+    const now = new Date();
+    const orderDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+    const orderTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    console.log('📋 Número de factura:', invoiceNumber);
+    console.log('📅 Fecha:', orderDate, 'Hora:', orderTime);
+    
+    // ============================================
+    // ✅ FORMATEAR PRODUCTOS EN HTML LIMPIO
+    // ============================================
+    let productsList = '';
+    let subtotalAmount = 0;
+    
+    cart.forEach((item, index) => {
+        subtotalAmount += item.price;
+        const itemNumber = index + 1;
+        
+        // Crear cada producto como un bloque HTML
+        productsList += `<div style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f9f9f9'}; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #dc2626;">`;
+        productsList += `<div style="font-weight: bold; color: #1f2937; font-size: 14px; margin-bottom: 4px;">${itemNumber}. ${item.name}</div>`;
+        
+        if (item.details) {
+            productsList += `<div style="color: #6b7280; font-size: 12px; margin-bottom: 4px;">📝 ${item.details}</div>`;
+        }
+        
+        productsList += `<div style="color: #dc2626; font-weight: bold; font-size: 14px;">💵 $${item.price.toLocaleString()}</div>`;
+        productsList += `</div>`;
+    });
+
+    console.log('🛒 Lista de productos HTML generada');
+    console.log('📊 Total items:', cart.length);
+    console.log('📄 HTML Preview:', productsList.substring(0, 200) + '...');
+
+    // Limpiar teléfono para WhatsApp
+    const phoneClean = formValues.phone.replace(/\D/g, '');
+
+    // ============================================
+    // ✅ PARÁMETROS PARA EMAILJS
+    // ============================================
+    const templateParams = {
+        to_email: 'misterbroasterrc2@gmail.com',
+        invoice_number: invoiceNumber,
+        order_date: orderDate,
+        order_time: orderTime,
+        customer_name: formValues.name,
+        customer_phone: formValues.phone,
+        customer_phone_clean: phoneClean,
+        customer_address: formValues.address,
+        customer_tower: formValues.tower,
+        customer_complex: formValues.complex,
+        products_list: productsList,
+        subtotal: subtotalAmount.toLocaleString(),
+        total_amount: total.toLocaleString(),
+        payment_method: formValues.method,
+        cash_given: formValues.cashGiven > 0 ? '$' + formValues.cashGiven.toLocaleString() : 'N/A',
+        change_amount: formValues.cashGiven > 0 ? '$' + (formValues.cashGiven - total).toLocaleString() : 'N/A'
+    };
+
+    console.log('📧 Parámetros del email preparados');
+
+    // Mostrar loader
+    Swal.fire({
+        title: 'Enviando pedido...',
+        html: 'Por favor espera un momento',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    console.log('📤 Intentando enviar email...');
+
+    // ============================================
+    // ENVIAR EMAIL CON EMAILJS
+    // ============================================
+    emailjs.send('service_xuif62j', 'template_hqbqx68', templateParams)
+        .then(function(response) {
+            console.log('✅ ¡Email enviado exitosamente!', response);
+            
+            // Generar PDF
+            const invoiceData = {
+                customer: {
+                    name: formValues.name,
+                    address: formValues.address,
+                    tower: formValues.tower,
+                    complex: formValues.complex,
+                    phone: formValues.phone
+                },
+                method: formValues.method,
+                products: cart,
+                total: total,
+                cashGiven: formValues.cashGiven,
+                invoiceNumber: invoiceNumber
+            };
+            
+            generateInvoicePDF(invoiceData);
+
+            Swal.fire({
+                title: '¡Pedido creado exitosamente!',
+                html: `<p style="color:#000;">
+                        <strong>Factura N° ${invoiceNumber}</strong><br><br>
+                        El domicilio demora entre <b>25 a 30 minutos</b>.<br><br>
+                        Por favor, esté atento a su teléfono para la llamada del domiciliario.<br><br>
+                        <strong>¡Gracias por tu compra! 🍗</strong>
+                       </p>`,
+                icon: 'success',
+                confirmButtonColor: '#dc2626',
+                background: '#fef3c7',
+                color: '#000000',
+            });
+
+            cart = [];
+            updateCart();
+            toggleCart();
+        })
+        .catch(function(error) {
+            console.error('❌ ERROR:', error);
+            
+            Swal.fire({
+                title: 'Error al enviar',
+                html: `<p style="color:#000;">
+                        <strong>Por favor, contacta directamente al:</strong><br>
+                        📞 <strong>321 2672196</strong>
+                       </p>`,
+                icon: 'error',
+                confirmButtonColor: '#dc2626',
+                background: '#fef3c7',
+                color: '#000000',
+            });
+        });
+}
+
+// ============================================
+// GENERADOR DE PDF
+// ============================================
+
+function generateInvoicePDF(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const fecha = `${new Date().getDate().toString().padStart(2, '0')}/${(new Date().getMonth()+1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
+    
+    // ENCABEZADO ROJO
+    doc.setFillColor(196, 22, 28);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    // Línea amarilla
+    doc.setFillColor(244, 196, 48);
+    doc.rect(0, 39, 210, 2, 'F');
+    
+    // Nombre empresa
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(26);
+    doc.text('MISTER BROASTER RC', 15, 18);
+    
+    // Datos empresa
+    doc.setFontSize(9);
+    doc.setTextColor(244, 196, 48);
+    doc.text('Bogotá, Colombia | Tel: 321 2672196 | www.misterbroasterrc.com', 15, 27);
+    
+    // Número de factura
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`FACTURA N° ${data.invoiceNumber}`, 130, 20);
+    doc.setFontSize(9);
+    doc.text(`Fecha: ${fecha}`, 130, 28);
+    
+    let y = 50;
+    
+    // INFORMACIÓN DEL CLIENTE
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(196, 22, 28);
+    doc.setFontSize(11);
+    doc.text('INFORMACIÓN DEL CLIENTE', 15, y);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51);
+    doc.setFontSize(10);
+    y += 7;
+    
+    doc.text(`Nombre: ${data.customer.name}`, 15, y);
+    y += 5;
+    doc.text(`Dirección: ${data.customer.address}`, 15, y);
+    y += 5;
+    
+    if (data.customer.tower && data.customer.tower !== 'N/A') {
+        doc.text(`Torre/Apartamento: ${data.customer.tower}`, 15, y);
+        y += 5;
+    }
+    
+    if (data.customer.complex && data.customer.complex !== 'N/A') {
+        doc.text(`Conjunto: ${data.customer.complex}`, 15, y);
+        y += 5;
+    }
+    
+    doc.text(`Teléfono: ${data.customer.phone}`, 15, y);
+    
+    y += 10;
+    
+    // TABLA DE PRODUCTOS
+    const colX = [15, 110, 160];
+    
+    doc.setFillColor(196, 22, 28);
+    doc.rect(15, y, 180, 8, 'F');
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text('PRODUCTO', colX[0], y + 5.5);
+    doc.text('DETALLES', colX[1], y + 5.5);
+    doc.text('VALOR', colX[2], y + 5.5, null, null, 'right');
+    
+    y += 10;
+    
+    // Línea separadora
+    doc.setDrawColor(244, 196, 48);
+    doc.setLineWidth(0.5);
+    doc.line(15, y - 1, 195, y - 1);
+    
+    // Productos
+    let subtotal = 0;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    
+    data.products.forEach((producto, index) => {
+        if (index % 2 === 0) {
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, y - 3, 180, 7, 'F');
+        }
+        
+        doc.setTextColor(51, 51, 51);
+        doc.setFont('helvetica', 'bold');
+        doc.text(producto.name, colX[0], y + 2);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        if (producto.details) {
+            doc.text(producto.details, colX[1], y + 2);
+        }
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(196, 22, 28);
+        doc.text(`${producto.price.toLocaleString()}`, colX[2], y + 2, null, null, 'right');
+        
+        y += 8;
+        subtotal += producto.price;
+    });
+    
+    // Línea final
+    doc.setDrawColor(196, 22, 28);
+    doc.setLineWidth(1);
+    doc.line(15, y, 195, y);
+    
+    y += 8;
+    
+    // TOTALES
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    
+    const envio = 0;
+    const total = subtotal + envio;
+    
+    // Subtotal
+    doc.setTextColor(51, 51, 51);
+    doc.text('Subtotal:', 140, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(196, 22, 28);
+    doc.text(`${subtotal.toLocaleString()}`, 190, y, null, null, 'right');
+    
+    y += 6;
+    
+    // Envío
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51);
+    doc.text('Envío:', 140, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(196, 22, 28);
+    doc.text(`${envio.toLocaleString()}`, 190, y, null, null, 'right');
+    
+    y += 10;
+    
+    // TOTAL (recuadro amarillo)
+    doc.setFillColor(244, 196, 48);
+    doc.rect(120, y - 7, 75, 11, 'F');
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(196, 22, 28);
+    doc.text('TOTAL A PAGAR:', 125, y + 1);
+    doc.setFontSize(14);
+    doc.text(`${total.toLocaleString()}`, 190, y + 1, null, null, 'right');
+    
+    y += 15;
+    
+    // MÉTODO DE PAGO
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(196, 22, 28);
+    doc.setFontSize(10);
+    doc.text('MÉTODO DE PAGO:', 15, y);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51);
+    doc.text(data.method, 15, y + 6);
+    
+    if (data.method === 'Efectivo' && data.cashGiven && data.cashGiven > 0) {
+        const cambio = data.cashGiven - total;
+        doc.text(`Efectivo recibido: ${data.cashGiven.toLocaleString()}`, 15, y + 11);
+        doc.text(`Cambio: ${cambio.toLocaleString()}`, 15, y + 16);
+    }
+    
+    y += 25;
+    
+    // FOOTER
+    doc.setDrawColor(244, 196, 48);
+    doc.setLineWidth(2);
+    doc.line(15, y, 195, y);
+    
+    y += 8;
+    
+    // Mensaje de agradecimiento
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(196, 22, 28);
+    doc.text('¡GRACIAS POR TU COMPRA!', 105, y, null, null, 'center');
+    
+    y += 8;
+    
+    // Contacto
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(85, 85, 85);
+    doc.text('Para consultas: www.misterbroasterrc.com', 105, y, null, null, 'center');
+    
+    y += 6;
+    doc.setFontSize(8);
+    doc.setTextColor(185, 28, 28);
+    doc.textWithLink('Diseñado por JSCH SOLUTION', 105, y, { align: 'center', url: 'http://bit.ly/3WVDhYX' });
+    
+    // Guardar PDF
+    doc.save(`Factura_MisterBroaster_${data.invoiceNumber}.pdf`);
+}
+
+// ============================================
+// FUNCIONES DE FILTRADO
+// ============================================
+
+function filterCategory(category) {
+    currentFilter = category;
+    
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const sections = document.querySelectorAll('.category-section');
+    
+    sections.forEach(section => {
+        if (category === 'all') {
+            section.style.display = 'block';
+            section.style.animation = 'fadeIn 0.5s ease';
+        } else {
+            const sectionCategory = section.getAttribute('data-category');
+            if (sectionCategory === category) {
+                section.style.display = 'block';
+                section.style.animation = 'fadeIn 0.5s ease';
+            } else {
+                section.style.display = 'none';
+            }
+        }
+    });
+
+    if (category !== 'all') {
+        const firstVisible = document.querySelector(`.category-section[data-category="${category}"]`);
+        if (firstVisible) {
+            setTimeout(() => {
+                firstVisible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    } else {
+        document.querySelector('.products-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+</script>
+
+</body>
