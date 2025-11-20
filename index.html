@@ -1639,7 +1639,6 @@
     // ============================================
 // INICIALIZAR EMAILJS CON TU PUBLIC KEY
 // ============================================
-// ✅ VERSIÓN CORRECTA
 (function() {
     emailjs.init({
         publicKey: "vDzWDMaio7cDnj3Hw"
@@ -1648,6 +1647,22 @@
 
 let cart = [];
 let currentFilter = 'all';
+
+// ============================================
+// CARGAR CARRITO DESDE LOCALSTORAGE
+// ============================================
+window.addEventListener('DOMContentLoaded', () => {
+    const savedCart = localStorage.getItem('misterbroaster_cart');
+    if (savedCart) {
+        try {
+            cart = JSON.parse(savedCart);
+            updateCart();
+        } catch (error) {
+            console.error('Error al cargar carrito:', error);
+            localStorage.removeItem('misterbroaster_cart');
+        }
+    }
+});
 
 // ============================================
 // FUNCIONES DEL CARRITO
@@ -1678,6 +1693,9 @@ function addToCart(name, price, details = null) {
 function updateCart() {
     const container = document.getElementById("cartItems");
     
+    // Guardar en localStorage
+    localStorage.setItem('misterbroaster_cart', JSON.stringify(cart));
+    
     if (cart.length === 0) {
         container.innerHTML = `
             <div class="cart-empty">
@@ -1696,7 +1714,7 @@ function updateCart() {
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         ${item.details ? `<div class="cart-item-details">${item.details}</div>` : ''}
-                        <div class="cart-item-price">${item.price.toLocaleString()}</div>
+                        <div class="cart-item-price">$${item.price.toLocaleString()}</div>
                     </div>
                     <button class="cart-item-remove" onclick="removeItem(${index})">×</button>
                 </div>
@@ -1704,7 +1722,7 @@ function updateCart() {
         });
 
         container.innerHTML = html;
-        document.getElementById("cartTotal").textContent = `${total.toLocaleString()}`;
+        document.getElementById("cartTotal").textContent = `$${total.toLocaleString()}`;
     }
 
     document.getElementById("cartCount").textContent = cart.length;
@@ -1917,6 +1935,63 @@ async function addComboToCart(name, price, size) {
 }
 
 // ============================================
+// VALIDACIÓN DE DATOS
+// ============================================
+
+function validateEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
+function validatePhone(phone) {
+    const cleaned = phone.replace(/\D/g, '');
+    return cleaned.length === 10 && cleaned.startsWith('3');
+}
+
+function formatPhone(phone) {
+    return phone.replace(/\D/g, '').substring(0, 10);
+}
+
+//
+
+// Función para generar HTML de productos para el email
+function generateProductsHtmlForEmail(cartItems) {
+    let html = '';
+    cartItems.forEach((item, index) => {
+        html += `<div style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #dc2626;">`;
+        html += `<div style="font-weight: bold; color: #1f2937; margin-bottom: 4px; font-size: 14px;">${index + 1}. ${item.name}</div>`;
+        
+        if (item.details) {
+            html += `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px; font-style: italic;">${item.details}</div>`;
+        }
+        
+        html += `<div style="color: #dc2626; font-weight: bold; font-size: 14px;">💵 $${item.price.toLocaleString()}</div>`;
+        html += `</div>`;
+    });
+    return html;
+}
+
+// Función para generar información de pago
+function generatePaymentInfo(method, total, cashGiven) {
+    let info = '';
+    
+    if (method === 'Nequi') {
+        info = `<p style="color: #047857; margin: 0;">Envía <strong>$${total.toLocaleString()}</strong> al número <strong>321 2672196</strong></p>`;
+    } else if (method === 'Daviplata') {
+        info = `<p style="color: #047857; margin: 0;">Envía <strong>$${total.toLocaleString()}</strong> al número <strong>321 2672196</strong></p>`;
+    } else if (method === 'Efectivo') {
+        if (cashGiven && cashGiven > 0) {
+            const change = cashGiven - total;
+            info = `<p style="color: #047857; margin: 0;">Monto a pagar: <strong>$${total.toLocaleString()}</strong><br>Paga con: <strong>$${cashGiven.toLocaleString()}</strong><br>Cambio: <strong>$${change.toLocaleString()}</strong></p>`;
+        } else {
+            info = `<p style="color: #047857; margin: 0;">Monto a pagar: <strong>$${total.toLocaleString()}</strong></p>`;
+        }
+    }
+    
+    return info;
+}
+
+// ============================================
 // FUNCIÓN PRINCIPAL: FINALIZAR PEDIDO
 // ============================================
 
@@ -1968,46 +2043,110 @@ async function finishOrder() {
 
     if (!isConfirmed) return;
 
-    // Solicitar datos del cliente
+    // Solicitar datos del cliente CON VALIDACIONES
     const { value: formValues } = await Swal.fire({
-        title: 'Confirmar datos del domicilio',
-        html: `<input id='swal-input-name' class="swal2-input" placeholder="Nombre completo" style="margin-bottom:10px;">
-                 <input id='swal-input-address' class="swal2-input" placeholder="Dirección completa" style="margin-bottom:10px;">
-                 <input id='swal-input-tower' class="swal2-input" placeholder="Torre y Apt (si aplica)" style="margin-bottom:10px;">
-                 <input id='swal-input-phone' class="swal2-input" placeholder="Número de contacto" style="margin-bottom:10px;">
-                 <input id='swal-input-complex' class="swal2-input" placeholder="Nombre del conjunto (si aplica)" style="margin-bottom:10px;">
-                 <select id='swal-input-method' class="swal2-select" style="margin-bottom:10px;">
-                   <option value='' disabled selected>- Selecciona método de pago -</option>
-                   <option value='Nequi'>Nequi</option>
-                   <option value='Daviplata'>Daviplata</option>
-                   <option value='Efectivo'>Efectivo</option>
-                 </select>
-                 <div id="payment-img" style="margin-bottom:10px;"></div>
-                 <div id="cash-payment" style="display:none; margin-top:10px;">
-                   <input id="swal-input-cash" class="swal2-input" type="number" min="0" placeholder="¿Con cuánto va a pagar?" />
-                   <p id="change-info" style="font-weight:bold; margin-top:5px; color:#000;"></p>
-                 </div>`,
+        title: 'Datos de Entrega',
+        html: `
+            <style>
+                .swal2-input, .swal2-select {
+                    margin: 8px 0 !important;
+                    font-size: 14px !important;
+                }
+                .input-hint {
+                    font-size: 11px;
+                    color: #6b7280;
+                    margin-top: -5px;
+                    margin-bottom: 8px;
+                    font-style: italic;
+                    text-align: left;
+                    padding-left: 5px;
+                }
+            </style>
+            <div class="input-hint"> Por favor escribe tu nombre</div>
+            <input id='swal-input-name' class="swal2-input" placeholder="Nombre completo *" autocomplete="name">
+            
+            <div class="input-hint">📧 Ejemplo: tucorreo@gmail.com</div>
+            <input id='swal-input-email' class="swal2-input" type="email" placeholder="Correo electrónico *" autocomplete="email">
+            
+            <div class="input-hint">📱 Ejemplo: 3001234567</div>
+            <input id='swal-input-phone' class="swal2-input" type="tel" placeholder="Número de contacto (10 dígitos) *" autocomplete="tel" maxlength="10">
+            
+            <div class="input-hint">🏠 Ejemplo: Calle 123 #45-67, Barrio Centro</div>
+            <input id='swal-input-address' class="swal2-input" placeholder="Dirección completa *" autocomplete="street-address">
+
+            <div class="input-hint">🏢 Si vives en conjunto, escribe: Torre 3 Apto 501. Si no, déjalo vacío.</div>
+            <div class="input-hint">🏘️ Ejemplo: Conjunto Residencial Los Pinos</div>
+            <input id='swal-input-complex' class="swal2-input" placeholder="Nombre del conjunto (opcional)">
+            <input id='swal-input-tower' class="swal2-input" placeholder="Torre y Apartamento (opcional)">
+            
+            <select id='swal-input-method' class="swal2-select">
+                <option value='' disabled selected>- Selecciona método de pago *</option>
+                <option value='Nequi'>Nequi</option>
+                <option value='Daviplata'>Daviplata</option>
+                <option value='Efectivo'>Efectivo</option>
+            </select>
+            <div id="payment-img"></div>
+            <div id="cash-payment" style="display:none; margin-top:10px;">
+                <input id="swal-input-cash" class="swal2-input" type="number" min="0" placeholder="¿Con cuánto va a pagar?" />
+                <p id="change-info" style="font-weight:bold; margin-top:5px; color:#000;"></p>
+            </div>`,
         background: '#fef3c7',
         color: '#000000',
         confirmButtonColor: '#dc2626',
+        width: '600px',
         focusConfirm: false,
         preConfirm: () => {
-            const name = document.getElementById('swal-input-name').value;
-            const address = document.getElementById('swal-input-address').value;
-            const phone = document.getElementById('swal-input-phone').value;
+            const name = document.getElementById('swal-input-name').value.trim();
+            const email = document.getElementById('swal-input-email').value.trim();
+            const phone = document.getElementById('swal-input-phone').value.trim();
+            const address = document.getElementById('swal-input-address').value.trim();
             const method = document.getElementById('swal-input-method').value;
 
-            if (!name || !address || !phone || !method) {
-                Swal.showValidationMessage('Por favor, completa todos los campos obligatorios');
-                return;
+            // Validación de nombre
+            if (!name || name.length < 3) {
+                Swal.showValidationMessage('❌ Por favor ingresa tu nombre completo (mínimo 3 caracteres)');
+                return false;
+            }
+
+            // Validación de email
+            if (!email) {
+                Swal.showValidationMessage('❌ El correo electrónico es obligatorio');
+                return false;
+            }
+            if (!validateEmail(email)) {
+                Swal.showValidationMessage('❌ Por favor ingresa un correo electrónico válido (debe contener @)');
+                return false;
+            }
+
+            // Validación de teléfono
+            if (!phone) {
+                Swal.showValidationMessage('❌ El número de teléfono es obligatorio');
+                return false;
+            }
+            if (!validatePhone(phone)) {
+                Swal.showValidationMessage('❌ Ingresa un número de celular colombiano válido (10 dígitos, debe comenzar con 3)');
+                return false;
+            }
+
+            // Validación de dirección
+            if (!address || address.length < 10) {
+                Swal.showValidationMessage('❌ Por favor ingresa una dirección completa y detallada (mínimo 10 caracteres)');
+                return false;
+            }
+
+            // Validación de método de pago
+            if (!method) {
+                Swal.showValidationMessage('❌ Por favor selecciona un método de pago');
+                return false;
             }
 
             return {
                 name: name,
+                email: email,
                 address: address,
-                tower: document.getElementById('swal-input-tower').value || 'N/A',
-                phone: phone,
-                complex: document.getElementById('swal-input-complex').value || 'N/A',
+                tower: document.getElementById('swal-input-tower').value.trim() || 'N/A',
+                phone: formatPhone(phone),
+                complex: document.getElementById('swal-input-complex').value.trim() || 'N/A',
                 method: method,
                 cashGiven: cashGiven
             };
@@ -2018,6 +2157,12 @@ async function finishOrder() {
             const cashPaymentDiv = document.getElementById('cash-payment');
             const cashInput = document.getElementById('swal-input-cash');
             const changeInfo = document.getElementById('change-info');
+            const phoneInput = document.getElementById('swal-input-phone');
+
+            // Solo permitir números en el teléfono
+            phoneInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
 
             function updateQRCode() {
                 if (select.value === 'Nequi') {
@@ -2087,10 +2232,21 @@ async function finishOrder() {
     // Confirmación final
     const confirmFinal = await Swal.fire({
         title: '¿Los datos ingresados son correctos?',
+        html: `
+            <div style="text-align:left; padding:15px; background:#fff; border-radius:10px; color:#000;">
+                <p><strong>👤 Nombre:</strong> ${formValues.name}</p>
+                <p><strong>📧 Email:</strong> ${formValues.email}</p>
+                <p><strong>📱 Teléfono:</strong> ${formValues.phone}</p>
+                <p><strong>🏠 Dirección:</strong> ${formValues.address}</p>
+                ${formValues.tower !== 'N/A' ? `<p><strong>🏢 Torre/Apto:</strong> ${formValues.tower}</p>` : ''}
+                ${formValues.complex !== 'N/A' ? `<p><strong>🏘️ Conjunto:</strong> ${formValues.complex}</p>` : ''}
+                <p><strong>💳 Método de pago:</strong> ${formValues.method}</p>
+            </div>
+        `,
         icon: 'question',
         showDenyButton: true,
-        confirmButtonText: 'Sí, confirmar',
-        denyButtonText: 'No, corregir',
+        confirmButtonText: 'Sí, confirmar pedido',
+        denyButtonText: 'No, corregir datos',
         confirmButtonColor: '#dc2626',
         denyButtonColor: '#fbbf24',
         background: '#fef3c7',
@@ -2103,7 +2259,7 @@ async function finishOrder() {
     }
 
     // ============================================
-    // GENERAR DATOS PARA EMAIL
+    // GENERAR DATOS PARA EMAIL Y WHATSAPP
     // ============================================
     const invoiceNumber = Math.floor(100000 + Math.random() * 900000);
     const now = new Date();
@@ -2114,16 +2270,17 @@ async function finishOrder() {
     console.log('📅 Fecha:', orderDate, 'Hora:', orderTime);
     
     // ============================================
-    // ✅ FORMATEAR PRODUCTOS EN HTML LIMPIO
+    // FORMATEAR PRODUCTOS PARA EMAIL
     // ============================================
     let productsList = '';
+    let productsTextWhatsApp = '';
     let subtotalAmount = 0;
     
     cart.forEach((item, index) => {
         subtotalAmount += item.price;
         const itemNumber = index + 1;
         
-        // Crear cada producto como un bloque HTML
+        // HTML para email
         productsList += `<div style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f9f9f9'}; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #dc2626;">`;
         productsList += `<div style="font-weight: bold; color: #1f2937; font-size: 14px; margin-bottom: 4px;">${itemNumber}. ${item.name}</div>`;
         
@@ -2133,109 +2290,302 @@ async function finishOrder() {
         
         productsList += `<div style="color: #dc2626; font-weight: bold; font-size: 14px;">💵 $${item.price.toLocaleString()}</div>`;
         productsList += `</div>`;
+
+        // Texto para WhatsApp
+        productsTextWhatsApp += `${itemNumber}. ${item.name}\n`;
+        if (item.details) {
+            productsTextWhatsApp += `   ${item.details}\n`;
+        }
+        productsTextWhatsApp += `   💵 $${item.price.toLocaleString()}\n\n`;
     });
 
-    console.log('🛒 Lista de productos HTML generada');
-    console.log('📊 Total items:', cart.length);
-    console.log('📄 HTML Preview:', productsList.substring(0, 200) + '...');
+    console.log('🛒 Lista de productos generada');
 
     // Limpiar teléfono para WhatsApp
     const phoneClean = formValues.phone.replace(/\D/g, '');
 
     // ============================================
-    // ✅ PARÁMETROS PARA EMAILJS
+    // PARÁMETROS PARA EMAILJS (Restaurante)
     // ============================================
-    const templateParams = {
-        to_email: 'misterbroasterrc2@gmail.com',
-        invoice_number: invoiceNumber,
-        order_date: orderDate,
-        order_time: orderTime,
-        customer_name: formValues.name,
-        customer_phone: formValues.phone,
-        customer_phone_clean: phoneClean,
-        customer_address: formValues.address,
-        customer_tower: formValues.tower,
-        customer_complex: formValues.complex,
-        products_list: productsList,
-        subtotal: subtotalAmount.toLocaleString(),
-        total_amount: total.toLocaleString(),
-        payment_method: formValues.method,
-        cash_given: formValues.cashGiven > 0 ? '$' + formValues.cashGiven.toLocaleString() : 'N/A',
-        change_amount: formValues.cashGiven > 0 ? '$' + (formValues.cashGiven - total).toLocaleString() : 'N/A'
-    };
 
-    console.log('📧 Parámetros del email preparados');
+// Primera inicialización EmailJS
+emailjs.init('vDzWDMaio7cDnj3Hw');
+
+// Parámetros para correo restaurante
+const templateParamsRestaurant = {
+  to_email: 'misterbroasterrc2@gmail.com',
+  invoice_number: invoiceNumber,
+  order_date: orderDate,
+  order_time: orderTime,
+  customer_name: formValues.name,
+  customer_email: formValues.email,
+  customer_phone: formValues.phone,
+  customer_phone_clean: phoneClean,
+  customer_address: formValues.address,
+  customer_tower: formValues.tower,
+  customer_complex: formValues.complex,
+  products_list: productsList,
+  subtotal: subtotalAmount.toLocaleString(),
+  total_amount: total.toLocaleString(),
+  payment_method: formValues.method,
+  cash_given: formValues.cashGiven > 0 ? '$' + formValues.cashGiven.toLocaleString() : 'N/A',
+  change_amount: formValues.cashGiven > 0 ? '$' + (formValues.cashGiven - total).toLocaleString() : 'N/A'
+};
+
+console.log('📧 Parámetros de email restaurante preparados:', templateParamsRestaurant);
+
+emailjs.send('service_xuif62j', 'template_hqbqx68', templateParamsRestaurant)
+.then(response => {
+  console.log('✅ Pedido enviado al restaurante');
+})
+.catch(() => {
+  // Ignora error, no mostrar en consola
+});
+
+// Segunda inicialización EmailJS
+emailjs.init('ho6UuRqOaVXBtUblo');
+
+const templateParamsCustomer = {
+  toemail: formValues.email,
+  customername: formValues.name,
+  invoicenumber: invoiceNumber,
+  orderdate: orderDate,
+  ordertime: orderTime,
+  customeraddress: formValues.address,
+  customerphone: formValues.phone,
+  productshtml: generateProductsHtmlForEmail(cart),
+  totalamount: total.toLocaleString(),
+  paymentmethod: formValues.method,
+  paymentinfo: generatePaymentInfo(formValues.method, total, formValues.cashGiven)
+};
+
+emailjs.send('service_y9r4jdy', 'template_pc8swwe', templateParamsCustomer)
+.then(response => {
+  console.log('✅ Correo enviado correctamente');
+})
+.catch(() => {
+  // Ignora error, no mostrar en consola
+});
+
+
+    // ============================================
+    // CREAR MENSAJE DE WHATSAPP
+    // ============================================
+    const whatsappMessage = 
+    `────────────────────────
+     *MISTER BROASTER RC* 
+     ────────────────────────
+
+     *Factura:* ${invoiceNumber}
+     *Fecha:* ${orderDate}
+     *Hora:* ${orderTime}
+
+     *CLIENTE*
+    • Nombre: ${formValues.name}
+    • Teléfono: ${formValues.phone}
+    • Email: ${formValues.email}
+    • Dirección: ${formValues.address}
+    ${formValues.tower !== 'N/A' ? `• Torre/Apto: ${formValues.tower}\n` : ''}${formValues.complex !== 'N/A' ? `• Conjunto: ${formValues.complex}\n` : ''}
+
+     *PRODUCTOS*
+    ${productsTextWhatsApp}
+
+     *TOTAL A PAGAR:* $${total.toLocaleString()}
+
+     *Método de pago:* ${formValues.method}
+     ${formValues.cashGiven > 0 ? ` *Paga con:* $${formValues.cashGiven.toLocaleString()}
+     *Cambio:* $${(formValues.cashGiven - total).toLocaleString()}` : ''}
+
+     *Tiempo estimado de entrega:* 25 - 30 minutos
+
+     *Pedido confirmado y listo para preparar*
+    ────────────────────────`;
+
+
+    const whatsappURL = `https://wa.me/573212672196?text=${encodeURIComponent(whatsappMessage)}`;
 
     // Mostrar loader
     Swal.fire({
-        title: 'Enviando pedido...',
-        html: 'Por favor espera un momento',
+        title: 'Procesando pedido...',
+        html: 'Enviando confirmación por email y WhatsApp',
         allowOutsideClick: false,
         didOpen: () => {
             Swal.showLoading();
         }
     });
 
-    console.log('📤 Intentando enviar email...');
+    console.log('📤 Intentando enviar emails...');
 
     // ============================================
-    // ENVIAR EMAIL CON EMAILJS
+    // ENVIAR EMAIL AL RESTAURANTE
     // ============================================
-    emailjs.send('service_xuif62j', 'template_hqbqx68', templateParams)
-        .then(function(response) {
-            console.log('✅ ¡Email enviado exitosamente!', response);
-            
-            // Generar PDF
-            const invoiceData = {
-                customer: {
-                    name: formValues.name,
-                    address: formValues.address,
-                    tower: formValues.tower,
-                    complex: formValues.complex,
-                    phone: formValues.phone
-                },
-                method: formValues.method,
-                products: cart,
-                total: total,
-                cashGiven: formValues.cashGiven,
-                invoiceNumber: invoiceNumber
-            };
-            
-            generateInvoicePDF(invoiceData);
+    try {
+        const responseRestaurant = await emailjs.send('service_xuif62j', 'template_hqbqx68', templateParamsRestaurant);
+        console.log('✅ Email al restaurante enviado:', responseRestaurant);
 
-            Swal.fire({
-                title: '¡Pedido creado exitosamente!',
-                html: `<p style="color:#000;">
-                        <strong>Factura N° ${invoiceNumber}</strong><br><br>
-                        El domicilio demora entre <b>25 a 30 minutos</b>.<br><br>
-                        Por favor, esté atento a su teléfono para la llamada del domiciliario.<br><br>
+        // ============================================
+        // ENVIAR EMAIL DE CONFIRMACIÓN AL CLIENTE
+        // ============================================
+        try {
+            const responseCustomer = await emailjs.send('service_meo45ke', 'template_pc8swwe', templateParamsCustomer);
+            console.log('✅ Email de confirmación al cliente enviado:', responseCustomer);
+        } catch (errorCustomer) {
+            console.warn('⚠️ No se pudo enviar email al cliente:', errorCustomer);
+            // No bloqueamos el proceso si falla el email del cliente
+        }
+
+        // ============================================
+        // ABRIR WHATSAPP AUTOMÁTICAMENTE
+        // ============================================
+        window.open(whatsappURL, '_blank');
+        console.log('✅ WhatsApp abierto');
+
+        // ============================================
+        // GENERAR PDF
+        // ============================================
+        const invoiceData = {
+            customer: {
+                name: formValues.name,
+                email: formValues.email,
+                address: formValues.address,
+                tower: formValues.tower,
+                complex: formValues.complex,
+                phone: formValues.phone
+            },
+            method: formValues.method,
+            products: cart,
+            total: total,
+            cashGiven: formValues.cashGiven,
+            invoiceNumber: invoiceNumber
+        };
+        
+        generateInvoicePDF(invoiceData);
+
+        // ============================================
+        // MENSAJE DE ÉXITO
+        // ============================================
+        await Swal.fire({
+            title: '¡Pedido Confirmado! 🎉',
+            html: `
+                <div style="text-align:left; padding:20px; color:#000;">
+                    <p style="text-align:center; font-size:18px; margin-bottom:15px;">
+                        <strong>✅ Tu pedido ha sido procesado exitosamente</strong>
+                    </p>
+                    
+                    <div style="background:#fff; padding:15px; border-radius:10px; margin:15px 0;">
+                        <p><strong>📋 Factura N°:</strong> ${invoiceNumber}</p>
+                        <p><strong>⏰ Tiempo de entrega:</strong> 25-30 minutos</p>
+                        <p><strong>💰 Total:</strong> ${total.toLocaleString()}</p>
+                    </div>
+
+                    <div style="background:#fef3c7; padding:15px; border-radius:10px; border-left:4px solid #dc2626; margin:15px 0;">
+                        <p style="margin:0;"><strong>📧 Email enviado a:</strong></p>
+                        <p style="margin:5px 0 0 0; color:#dc2626;">${formValues.email}</p>
+                    </div>
+
+                    <div style="background:#dcfce7; padding:15px; border-radius:10px; border-left:4px solid #059669; margin:15px 0;">
+                        <p style="margin:0;"><strong>📱 WhatsApp:</strong></p>
+                        <p style="margin:5px 0 0 0;">Se abrió automáticamente para confirmar tu pedido</p>
+                    </div>
+
+                    <p style="text-align:center; margin-top:20px; font-size:14px;">
+                        Por favor, mantén tu teléfono disponible para la llamada del domiciliario
+                    </p>
+
+                    <p style="text-align:center; font-size:16px; color:#dc2626; margin-top:15px;">
                         <strong>¡Gracias por tu compra! 🍗</strong>
-                       </p>`,
-                icon: 'success',
-                confirmButtonColor: '#dc2626',
-                background: '#fef3c7',
-                color: '#000000',
-            });
-
-            cart = [];
-            updateCart();
-            toggleCart();
-        })
-        .catch(function(error) {
-            console.error('❌ ERROR:', error);
-            
-            Swal.fire({
-                title: 'Error al enviar',
-                html: `<p style="color:#000;">
-                        <strong>Por favor, contacta directamente al:</strong><br>
-                        📞 <strong>321 2672196</strong>
-                       </p>`,
-                icon: 'error',
-                confirmButtonColor: '#dc2626',
-                background: '#fef3c7',
-                color: '#000000',
-            });
+                    </p>
+                </div>
+            `,
+            icon: 'success',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#dc2626',
+            background: '#fef3c7',
+            color: '#000000',
+            width: '600px'
         });
+
+        // Limpiar carrito
+        cart = [];
+        localStorage.removeItem('misterbroaster_cart');
+        updateCart();
+        toggleCart();
+
+    } catch (error) {
+        console.error('❌ ERROR al enviar emails:', error);
+        
+        // Si falla el email, igual abrimos WhatsApp
+        window.open(whatsappURL, '_blank');
+        
+        Swal.fire({
+            title: '¡Pedido Confirmado! 🎉',
+            html: `
+                <div style="text-align:left; padding:20px; color:#000;">
+                    <p style="text-align:center; font-size:18px; margin-bottom:15px;">
+                        <strong>✅ Tu pedido ha sido procesado exitosamente y se ha descargado tu factura de compra con exito.</strong>
+                    </p>
+                    <div style="background:#fef3c7; padding:15px; border-radius:10px; margin:15px 0;">
+                        <p><strong>📋 Factura N°:</strong> ${invoiceNumber}</p>
+                        <p><strong>💰 Total:</strong> ${total.toLocaleString()}</p>
+                    </div>
+                    <div style="background:#fff; padding:15px; border-radius:10px; margin:15px 0;">
+                        <p><strong>📋 Factura N°:</strong> ${invoiceNumber}</p>
+                        <p><strong>⏰ Tiempo de entrega:</strong> 25-30 minutos</p>
+                        <p><strong>💰 Total:</strong> ${total.toLocaleString()}</p>
+                    </div>
+
+                    <div style="background:#fef3c7; padding:15px; border-radius:10px; border-left:4px solid #dc2626; margin:15px 0;">
+                        <p style="margin:0;"><strong>📧 Email enviado a:</strong></p>
+                        <p style="margin:5px 0 0 0; color:#dc2626;">${formValues.email}</p>
+                    </div>
+
+                    <div style="background:#dcfce7; padding:15px; border-radius:10px; border-left:4px solid #059669; margin:15px 0;">
+                        <p style="margin:0;"><strong>📱 WhatsApp:</strong></p>
+                        <p style="margin:5px 0 0 0;">Se abrió automáticamente para confirmar tu pedido</p>
+                    </div>
+
+                    <p style="text-align:center; margin-top:20px; font-size:14px;">
+                        Por favor, mantén tu teléfono disponible para la llamada del domiciliario
+                    </p>
+
+                    <p style="text-align:center; font-size:16px; color:#dc2626; margin-top:15px;">
+                        <strong>¡Gracias por tu compra! 🍗</strong>
+                    </p>
+                </div>
+            `,
+            icon: 'success',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#dc2626',
+            background: '#fef3c7',
+            color: '#000000',
+            width: '600px'
+        });
+
+        // Generar PDF de todas formas
+        const invoiceData = {
+            customer: {
+                name: formValues.name,
+                email: formValues.email,
+                address: formValues.address,
+                tower: formValues.tower,
+                complex: formValues.complex,
+                phone: formValues.phone
+            },
+            method: formValues.method,
+            products: cart,
+            total: total,
+            cashGiven: formValues.cashGiven,
+            invoiceNumber: invoiceNumber
+        };
+        
+        generateInvoicePDF(invoiceData);
+
+        // Limpiar carrito
+        cart = [];
+        localStorage.removeItem('misterbroaster_cart');
+        updateCart();
+        toggleCart();
+    }
 }
 
 // ============================================
@@ -2243,213 +2593,232 @@ async function finishOrder() {
 // ============================================
 
 function generateInvoicePDF(data) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    
-    const fecha = `${new Date().getDate().toString().padStart(2, '0')}/${(new Date().getMonth()+1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
-    
-    // ENCABEZADO ROJO
-    doc.setFillColor(196, 22, 28);
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    // Línea amarilla
-    doc.setFillColor(244, 196, 48);
-    doc.rect(0, 39, 210, 2, 'F');
-    
-    // Nombre empresa
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(26);
-    doc.text('MISTER BROASTER RC', 15, 18);
-    
-    // Datos empresa
-    doc.setFontSize(9);
-    doc.setTextColor(244, 196, 48);
-    doc.text('Bogotá, Colombia | Tel: 321 2672196 | www.misterbroasterrc.com', 15, 27);
-    
-    // Número de factura
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`FACTURA N° ${data.invoiceNumber}`, 130, 20);
-    doc.setFontSize(9);
-    doc.text(`Fecha: ${fecha}`, 130, 28);
-    
-    let y = 50;
-    
-    // INFORMACIÓN DEL CLIENTE
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(196, 22, 28);
-    doc.setFontSize(11);
-    doc.text('INFORMACIÓN DEL CLIENTE', 15, y);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(51, 51, 51);
-    doc.setFontSize(10);
-    y += 7;
-    
-    doc.text(`Nombre: ${data.customer.name}`, 15, y);
-    y += 5;
-    doc.text(`Dirección: ${data.customer.address}`, 15, y);
-    y += 5;
-    
-    if (data.customer.tower && data.customer.tower !== 'N/A') {
-        doc.text(`Torre/Apartamento: ${data.customer.tower}`, 15, y);
-        y += 5;
-    }
-    
-    if (data.customer.complex && data.customer.complex !== 'N/A') {
-        doc.text(`Conjunto: ${data.customer.complex}`, 15, y);
-        y += 5;
-    }
-    
-    doc.text(`Teléfono: ${data.customer.phone}`, 15, y);
-    
-    y += 10;
-    
-    // TABLA DE PRODUCTOS
-    const colX = [15, 110, 160];
-    
-    doc.setFillColor(196, 22, 28);
-    doc.rect(15, y, 180, 8, 'F');
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text('PRODUCTO', colX[0], y + 5.5);
-    doc.text('DETALLES', colX[1], y + 5.5);
-    doc.text('VALOR', colX[2], y + 5.5, null, null, 'right');
-    
-    y += 10;
-    
-    // Línea separadora
-    doc.setDrawColor(244, 196, 48);
-    doc.setLineWidth(0.5);
-    doc.line(15, y - 1, 195, y - 1);
-    
-    // Productos
-    let subtotal = 0;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    
-    data.products.forEach((producto, index) => {
-        if (index % 2 === 0) {
-            doc.setFillColor(240, 240, 240);
-            doc.rect(15, y - 3, 180, 7, 'F');
-        }
+    try {
+        const { jsPDF } = window.jspdf;
         
-        doc.setTextColor(51, 51, 51);
+        if (!jsPDF) {
+            console.error('jsPDF no está disponible');
+            return;
+        }
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        const fecha = `${new Date().getDate().toString().padStart(2, '0')}/${(new Date().getMonth()+1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
+        
+        // ENCABEZADO ROJO
+        doc.setFillColor(196, 22, 28);
+        doc.rect(0, 0, 210, 40, 'F');
+        
+        // Línea amarilla
+        doc.setFillColor(244, 196, 48);
+        doc.rect(0, 39, 210, 2, 'F');
+        
+        // Nombre empresa
         doc.setFont('helvetica', 'bold');
-        doc.text(producto.name, colX[0], y + 2);
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(26);
+        doc.text('MISTER BROASTER RC', 15, 18);
+        
+        // Datos empresa
+        doc.setFontSize(9);
+        doc.setTextColor(244, 196, 48);
+        doc.text('Bogotá, Colombia | Tel: 321 2672196 | www.misterbroasterrc.com', 15, 27);
+        
+        // Número de factura
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`FACTURA N° ${data.invoiceNumber}`, 130, 20);
+        doc.setFontSize(9);
+        doc.text(`Fecha: ${fecha}`, 130, 28);
+        
+        let y = 50;
+        
+        // INFORMACIÓN DEL CLIENTE
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(196, 22, 28);
+        doc.setFontSize(11);
+        doc.text('INFORMACIÓN DEL CLIENTE', 15, y);
         
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
-        if (producto.details) {
-            doc.text(producto.details, colX[1], y + 2);
+        doc.setTextColor(51, 51, 51);
+        doc.setFontSize(10);
+        y += 7;
+        
+        doc.text(`Nombre: ${data.customer.name}`, 15, y);
+        y += 5;
+        
+        if (data.customer.email) {
+            doc.text(`Email: ${data.customer.email}`, 15, y);
+            y += 5;
         }
         
+        doc.text(`Teléfono: ${data.customer.phone}`, 15, y);
+        y += 5;
+        
+        doc.text(`Dirección: ${data.customer.address}`, 15, y);
+        y += 5;
+        
+        if (data.customer.tower && data.customer.tower !== 'N/A') {
+            doc.text(`Torre/Apartamento: ${data.customer.tower}`, 15, y);
+            y += 5;
+        }
+        
+        if (data.customer.complex && data.customer.complex !== 'N/A') {
+            doc.text(`Conjunto: ${data.customer.complex}`, 15, y);
+            y += 5;
+        }
+        
+        y += 10;
+        
+        // TABLA DE PRODUCTOS
+        const colX = [15, 110, 160];
+        
+        doc.setFillColor(196, 22, 28);
+        doc.rect(15, y, 180, 8, 'F');
+        
         doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.text('PRODUCTO', colX[0], y + 5.5);
+        doc.text('DETALLES', colX[1], y + 5.5);
+        doc.text('VALOR', colX[2], y + 5.5, null, null, 'right');
+        
+        y += 10;
+        
+        // Línea separadora
+        doc.setDrawColor(244, 196, 48);
+        doc.setLineWidth(0.5);
+        doc.line(15, y - 1, 195, y - 1);
+        
+        // Productos
+        let subtotal = 0;
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        doc.setTextColor(196, 22, 28);
-        doc.text(`${producto.price.toLocaleString()}`, colX[2], y + 2, null, null, 'right');
+        
+        data.products.forEach((producto, index) => {
+            if (index % 2 === 0) {
+                doc.setFillColor(240, 240, 240);
+                doc.rect(15, y - 3, 180, 7, 'F');
+            }
+            
+            doc.setTextColor(51, 51, 51);
+            doc.setFont('helvetica', 'bold');
+            doc.text(producto.name, colX[0], y + 2);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            if (producto.details) {
+                doc.text(producto.details.substring(0, 30), colX[1], y + 2);
+            }
+            
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(196, 22, 28);
+            doc.text(`${producto.price.toLocaleString()}`, colX[2], y + 2, null, null, 'right');
+            
+            y += 8;
+            subtotal += producto.price;
+        });
+        
+        // Línea final
+        doc.setDrawColor(196, 22, 28);
+        doc.setLineWidth(1);
+        doc.line(15, y, 195, y);
         
         y += 8;
-        subtotal += producto.price;
-    });
-    
-    // Línea final
-    doc.setDrawColor(196, 22, 28);
-    doc.setLineWidth(1);
-    doc.line(15, y, 195, y);
-    
-    y += 8;
-    
-    // TOTALES
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    
-    const envio = 0;
-    const total = subtotal + envio;
-    
-    // Subtotal
-    doc.setTextColor(51, 51, 51);
-    doc.text('Subtotal:', 140, y);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(196, 22, 28);
-    doc.text(`${subtotal.toLocaleString()}`, 190, y, null, null, 'right');
-    
-    y += 6;
-    
-    // Envío
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(51, 51, 51);
-    doc.text('Envío:', 140, y);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(196, 22, 28);
-    doc.text(`${envio.toLocaleString()}`, 190, y, null, null, 'right');
-    
-    y += 10;
-    
-    // TOTAL (recuadro amarillo)
-    doc.setFillColor(244, 196, 48);
-    doc.rect(120, y - 7, 75, 11, 'F');
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(196, 22, 28);
-    doc.text('TOTAL A PAGAR:', 125, y + 1);
-    doc.setFontSize(14);
-    doc.text(`${total.toLocaleString()}`, 190, y + 1, null, null, 'right');
-    
-    y += 15;
-    
-    // MÉTODO DE PAGO
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(196, 22, 28);
-    doc.setFontSize(10);
-    doc.text('MÉTODO DE PAGO:', 15, y);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(51, 51, 51);
-    doc.text(data.method, 15, y + 6);
-    
-    if (data.method === 'Efectivo' && data.cashGiven && data.cashGiven > 0) {
-        const cambio = data.cashGiven - total;
-        doc.text(`Efectivo recibido: ${data.cashGiven.toLocaleString()}`, 15, y + 11);
-        doc.text(`Cambio: ${cambio.toLocaleString()}`, 15, y + 16);
+        
+        // TOTALES
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        
+        const envio = 0;
+        const total = subtotal + envio;
+        
+        // Subtotal
+        doc.setTextColor(51, 51, 51);
+        doc.text('Subtotal:', 140, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(196, 22, 28);
+        doc.text(`${subtotal.toLocaleString()}`, 190, y, null, null, 'right');
+        
+        y += 6;
+        
+        // Envío
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(51, 51, 51);
+        doc.text('Envío:', 140, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(196, 22, 28);
+        doc.text('GRATIS', 190, y, null, null, 'right');
+        
+        y += 10;
+        
+        // TOTAL (recuadro amarillo)
+        doc.setFillColor(244, 196, 48);
+        doc.rect(120, y - 7, 75, 11, 'F');
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(196, 22, 28);
+        doc.text('TOTAL A PAGAR:', 125, y + 1);
+        doc.setFontSize(14);
+        doc.text(`${total.toLocaleString()}`, 190, y + 1, null, null, 'right');
+        
+        y += 15;
+        
+        // MÉTODO DE PAGO
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(196, 22, 28);
+        doc.setFontSize(10);
+        doc.text('MÉTODO DE PAGO:', 15, y);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(51, 51, 51);
+        doc.text(data.method, 15, y + 6);
+        
+        if (data.method === 'Efectivo' && data.cashGiven && data.cashGiven > 0) {
+            const cambio = data.cashGiven - total;
+            doc.text(`Efectivo recibido: ${data.cashGiven.toLocaleString()}`, 15, y + 11);
+            doc.text(`Cambio: ${cambio.toLocaleString()}`, 15, y + 16);
+        }
+        
+        y += 25;
+        
+        // FOOTER
+        doc.setDrawColor(244, 196, 48);
+        doc.setLineWidth(2);
+        doc.line(15, y, 195, y);
+        
+        y += 8;
+        
+        // Mensaje de agradecimiento
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(196, 22, 28);
+        doc.text('¡GRACIAS POR TU COMPRA!', 105, y, null, null, 'center');
+        
+        y += 8;
+        
+        // Contacto
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(85, 85, 85);
+        doc.text('Tiempo de entrega: 25-30 minutos | WhatsApp: 321 2672196', 105, y, null, null, 'center');
+        
+        y += 6;
+        doc.setFontSize(8);
+        doc.setTextColor(185, 28, 28);
+        doc.textWithLink('Diseñado por JSCH SOLUTION', 105, y, { align: 'center', url: 'http://bit.ly/3WVDhYX' });
+        
+        // Guardar PDF
+        doc.save(`Factura_MisterBroaster_${data.invoiceNumber}.pdf`);
+        console.log('✅ PDF generado exitosamente');
+        
+    } catch (error) {
+        console.error('❌ Error generando PDF:', error);
     }
-    
-    y += 25;
-    
-    // FOOTER
-    doc.setDrawColor(244, 196, 48);
-    doc.setLineWidth(2);
-    doc.line(15, y, 195, y);
-    
-    y += 8;
-    
-    // Mensaje de agradecimiento
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(196, 22, 28);
-    doc.text('¡GRACIAS POR TU COMPRA!', 105, y, null, null, 'center');
-    
-    y += 8;
-    
-    // Contacto
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(85, 85, 85);
-    doc.text('Para consultas: www.misterbroasterrc.com', 105, y, null, null, 'center');
-    
-    y += 6;
-    doc.setFontSize(8);
-    doc.setTextColor(185, 28, 28);
-    doc.textWithLink('Diseñado por JSCH SOLUTION', 105, y, { align: 'center', url: 'http://bit.ly/3WVDhYX' });
-    
-    // Guardar PDF
-    doc.save(`Factura_MisterBroaster_${data.invoiceNumber}.pdf`);
 }
 
 // ============================================
